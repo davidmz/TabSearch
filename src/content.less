@@ -1,0 +1,130 @@
+@pfx: __tab-search-ext--;
+
+.@{pfx}center-wrapper {
+    position:        fixed;
+    top:             0;
+    left:            0;
+    right:           0;
+    bottom:          0;
+    background:      rgba(0, 0, 0, 0.2);
+    display:         flex;
+    justify-content: center;
+    align-items:     center;
+    z-index:         100000;
+}
+
+.@{pfx}container {
+    max-height:       80%;
+    width:            60%;
+    background-color: #fff;
+    color:            #000;
+    font:             normal normal normal 15px/1.33 Arial, helvetica, sans-serif;
+    text-align:       left;
+    border:           1px solid #999;
+    border-radius:    4px;
+    box-shadow:       2px 2px 18px rgba(0, 0, 0, 0.33);
+    display:          flex;
+    overflow:         hidden;
+    flex-direction:   column;
+
+    @media (min-width: 1000px) {
+        width:         600px;
+    }
+}
+
+.@{pfx}head {
+    flex-shrink: 0;
+    display:     flex;
+    padding:     8px;
+    background:  #eee;
+}
+
+.@{pfx}input {
+    flex-grow:     1;
+    padding:       4px;
+    font-size:     120%;
+    border:        1px solid #999;
+    border-radius: 4px;
+}
+
+.@{pfx}list {
+    overflow-y: auto;
+}
+
+.@{pfx}item {
+    display:         flex;
+    flex-flow:       row nowrap;
+    justify-content: flex-start;
+    position:        relative;
+    padding:         4px;
+    background:      linear-gradient(to bottom, #fff, #eee);
+    cursor:          pointer;
+}
+
+&.@{pfx}first-in-win {
+    border-top: 1px solid #666;
+}
+
+.@{pfx}close-btn {
+    background: transparent url(chrome-extension://__MSG_@@extension_id__/img/cross-small.png) no-repeat center center;
+    position:   absolute;
+    top:        0;
+    right:      0;
+    width:      18px;
+    height:     18px;
+    opacity:    0.33;
+    display:    none;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.@{pfx}item:hover .@{pfx}close-btn {
+    display: block;
+}
+
+.@{pfx}icon {
+    @size: 18px;
+    flex:         0 1 @size;
+    width:        @size !important;
+    height:       @size !important;
+    min-width:    @size !important;
+    margin-right: 4px;
+}
+
+.@{pfx}info-box {
+    flex:        0 1 auto;
+    white-space: nowrap;
+
+    span {
+        font-weight:      bold;
+        background-color: #ffc;
+        color:            black;
+    }
+}
+
+.@{pfx}title {
+    flex:          0 1 auto;
+    text-overflow: ellipsis;
+    overflow:      hidden;
+}
+
+.@{pfx}url {
+    font-size:     75%;
+    color:         #69c;
+    text-overflow: ellipsis;
+    overflow:      hidden;
+}
+
+.@{pfx}current-item {
+    background: #069;
+
+    .@{pfx}title {
+        color: #ffffff;
+    }
+
+    .@{pfx}url {
+        color: #bcd;
+    }
+}

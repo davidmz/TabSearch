@@ -1,0 +1,11 @@
+{
+    "extName": {
+        "message": "Быстрый поиск вкладок (Quick tab search)"
+    },
+    "extDescr": {
+        "message": "Быстрый поиск по открытым вкладкам"
+    },
+    "close_tab": {
+        "message": "Закрыть вкладку"
+    }
+}

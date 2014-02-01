@@ -1,0 +1,111 @@
+.__tab-search-ext--center-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+}
+.__tab-search-ext--container {
+  max-height: 80%;
+  width: 60%;
+  background-color: #fff;
+  color: #000;
+  font: normal normal normal 15px/1.33 Arial, helvetica, sans-serif;
+  text-align: left;
+  border: 1px solid #999;
+  border-radius: 4px;
+  box-shadow: 2px 2px 18px rgba(0, 0, 0, 0.33);
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+}
+@media (min-width: 1000px) {
+  .__tab-search-ext--container {
+    width: 600px;
+  }
+}
+.__tab-search-ext--head {
+  flex-shrink: 0;
+  display: flex;
+  padding: 8px;
+  background: #eee;
+}
+.__tab-search-ext--input {
+  flex-grow: 1;
+  padding: 4px;
+  font-size: 120%;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+.__tab-search-ext--list {
+  overflow-y: auto;
+}
+.__tab-search-ext--item {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  position: relative;
+  padding: 4px;
+  background: linear-gradient(to bottom, #ffffff, #eeeeee);
+  cursor: pointer;
+}
+.__tab-search-ext--first-in-win {
+  border-top: 1px solid #666;
+}
+.__tab-search-ext--close-btn {
+  background: transparent url(chrome-extension://__MSG_@@extension_id__/img/cross-small.png) no-repeat center center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  opacity: 0.33;
+  display: none;
+}
+.__tab-search-ext--close-btn:hover {
+  opacity: 1;
+}
+.__tab-search-ext--item:hover .__tab-search-ext--close-btn {
+  display: block;
+}
+.__tab-search-ext--icon {
+  flex: 0 1 18px;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  margin-right: 4px;
+}
+.__tab-search-ext--info-box {
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+.__tab-search-ext--info-box span {
+  font-weight: bold;
+  background-color: #ffc;
+  color: black;
+}
+.__tab-search-ext--title {
+  flex: 0 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.__tab-search-ext--url {
+  font-size: 75%;
+  color: #69c;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.__tab-search-ext--current-item {
+  background: #069;
+}
+.__tab-search-ext--current-item .__tab-search-ext--title {
+  color: #ffffff;
+}
+.__tab-search-ext--current-item .__tab-search-ext--url {
+  color: #bcd;
+}

@@ -1,0 +1,11 @@
+{
+    "extName": {
+        "message": "Quick tab search"
+    },
+    "extDescr": {
+        "message": "Quick search for open tabs"
+    },
+    "closeTab": {
+        "message": "Close tab"
+    }
+}
