@@ -1,5 +1,5 @@
 (function () {
-    var DOUBLE_PRESS_TIMEOUT = 500,
+    var DOUBLE_PRESS_TIMEOUT = 1000,
         SHIFT_KEY = 16,
         ENTER_KEY = 13,
         ESCAPE_KEY = 27,
@@ -15,27 +15,52 @@
         selectedIndex = -1,
         tabList = [];
 
-    var doubleShiftTimer = null;
+    var lastShiftState = false;
     doc.body.addEventListener('keydown', function (e) {
-        if (e.keyCode == SHIFT_KEY && !UIEl) {
-            if (doubleShiftTimer === null) {
-                doubleShiftTimer = setTimeout(function () { doubleShiftTimer = null; }, DOUBLE_PRESS_TIMEOUT);
-            } else {
-                clearTimeout(doubleShiftTimer);
-                doubleShiftTimer = null;
-                chrome.runtime.sendMessage(
-                    {"action": "getTabList"},
-                    function (tabs) {
-                        console.log(tabs);
-                        tabList = tabs;
-                        showUI();
-                    }
-                );
-            }
-        } else if (e.keyCode == ESCAPE_KEY && UIEl) {
-            closeUI();
+        if (e.keyCode == SHIFT_KEY && !lastShiftState) {
+            lastShiftState = true;
+            shiftChanged(lastShiftState);
         }
     });
+    doc.body.addEventListener('keyup', function (e) {
+        if (e.keyCode == SHIFT_KEY && lastShiftState) {
+            lastShiftState = false;
+            shiftChanged(lastShiftState);
+        }
+    });
+
+    var shiftCounter = 0,
+        doubleShiftTimer = null;
+
+    function shiftChanged(st) {
+        if (st) {
+            if (doubleShiftTimer === null) {
+                shiftCounter = 0;
+                doubleShiftTimer = setTimeout(function () { doubleShiftTimer = null; }, DOUBLE_PRESS_TIMEOUT);
+            } else {
+                shiftCounter++;
+            }
+        } else {
+            if (doubleShiftTimer && shiftCounter > 0) {
+                clearTimeout(doubleShiftTimer);
+                doubleShiftTimer = null;
+                shiftCounter = 0;
+                doubleShiftHappens();
+            }
+        }
+    }
+
+    function doubleShiftHappens() {
+        if (UIEl) return;
+        chrome.runtime.sendMessage(
+            {"action": "getTabList"},
+            function (tabs) {
+                tabList = tabs;
+                showUI();
+            }
+        );
+    }
+
     doc.body.addEventListener('mousedown', function (e) {
         if (!UIEl) return;
         var el = e.target, found = false;
@@ -57,13 +82,13 @@
 
         var headEl = winEl.appendChild(doc.createElement("div"));
         headEl.className = CSS_PREFIX + "head";
+        headEl.addEventListener("mousedown", function (e) { e.preventDefault(); });
 
         var inputEl = headEl.appendChild(doc.createElement("input"));
         inputEl.type = "text";
         inputEl.className = CSS_PREFIX + "input";
         inputEl.autocomplete = false;
         inputEl.focus();
-        winEl.addEventListener("mouseup", function () { inputEl.focus(); });
 
         var listEl = winEl.appendChild(doc.createElement("div"));
         listEl.className = CSS_PREFIX + "list";
@@ -75,27 +100,31 @@
         inputEl.addEventListener("keydown", function (e) {
             e.stopPropagation();
             var nItems = listEl.children.length;
-            if (nItems > 0) {
-                if (e.keyCode == DOWN_KEY) {
+            if (e.keyCode == DOWN_KEY) {
+                if (nItems > 0) {
                     selectedIndex = (selectedIndex + 1) % nItems;
                     updateSelection(listEl, selectedIndex);
-                } else if (e.keyCode == UP_KEY) {
+                }
+            } else if (e.keyCode == UP_KEY) {
+                if (nItems > 0) {
                     if (selectedIndex <= 0) {
                         selectedIndex = nItems - 1;
                     } else {
                         selectedIndex = (selectedIndex - 1) % nItems;
                     }
                     updateSelection(listEl, selectedIndex);
-                } else if (e.keyCode == ENTER_KEY) {
+                }
+            } else if (e.keyCode == ENTER_KEY) {
+                if (nItems > 0) {
                     var tabId = parseInt(listEl.children[selectedIndex < 0 ? 0 : selectedIndex].dataset.id, 10);
                     chrome.runtime.sendMessage({"action": "setTab", id: tabId}, closeUI);
-                } else if (e.keyCode == ESCAPE_KEY) {
-                    closeUI();
-                } else {
-                    return;
                 }
-                e.preventDefault();
+            } else if (e.keyCode == ESCAPE_KEY) {
+                closeUI();
+            } else {
+                return;
             }
+            e.preventDefault();
         });
         drawList(listEl);
     };

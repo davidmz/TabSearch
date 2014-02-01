@@ -5,7 +5,7 @@
     "extDescr": {
         "message": "Быстрый поиск по открытым вкладкам"
     },
-    "close_tab": {
+    "closeTab": {
         "message": "Закрыть вкладку"
     }
 }
