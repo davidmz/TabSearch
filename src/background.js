@@ -21,6 +21,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
         });
     } else if (request.action == "closeTab") {
         chrome.tabs.remove(request.id, callback);
+    } else if (request.action == "newTab") {
+        chrome.tabs.create({url: "https://www.google.com/search?btnI&q=" + encodeURIComponent(request.text), openerTabId: sender.tab.id}, callback);
     }
     return true;
 });

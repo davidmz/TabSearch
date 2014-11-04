@@ -7,5 +7,14 @@
     },
     "closeTab": {
         "message": "Закрыть вкладку"
+    },
+    "reloadMessageText": {
+        "message": "Расширение «Быстрый поиск вкладок» было обновлено, для его работы необходимо обновить страницу."
+    },
+    "reloadButtonText": {
+        "message": "Обновить"
+    },
+    "cancelButtonText": {
+        "message": "Отмена"
     }
 }

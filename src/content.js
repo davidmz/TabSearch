@@ -12,54 +12,65 @@
 
     var
         UIEl = null,
+        lastActiveElement = null,
         selectedIndex = -1,
         tabList = [];
 
-    var lastShiftState = false;
-    doc.body.addEventListener('keydown', function (e) {
-        if (e.keyCode == SHIFT_KEY && !lastShiftState) {
-            lastShiftState = true;
-            shiftChanged(lastShiftState);
-        }
-    });
-    doc.body.addEventListener('keyup', function (e) {
-        if (e.keyCode == SHIFT_KEY && lastShiftState) {
-            lastShiftState = false;
-            shiftChanged(lastShiftState);
-        }
-    });
+    /**
+     * Ловим нажатие (А) - отпускание - нажатие - отпускание (Б) клавиши Shift,
+     * так чтобы между А и Б прошло не более DOUBLE_PRESS_TIMEOUT и
+     * не были нажаты или отпущены другие клавиши.
+     */
+    (function (handler) {
+        var lastShiftState = false,
+            shiftCounter = 0,
+            doubleShiftTimer = null;
 
-    var shiftCounter = 0,
-        doubleShiftTimer = null;
-
-    function shiftChanged(st) {
-        if (st) {
-            if (doubleShiftTimer === null) {
-                shiftCounter = 0;
-                doubleShiftTimer = setTimeout(function () { doubleShiftTimer = null; }, DOUBLE_PRESS_TIMEOUT);
-            } else {
-                shiftCounter++;
-            }
-        } else {
-            if (doubleShiftTimer && shiftCounter > 0) {
+        doc.body.addEventListener('keydown', function (e) {
+            if (e.keyCode == SHIFT_KEY && !lastShiftState) {
+                lastShiftState = true;
+                if (!doubleShiftTimer) {
+                    shiftCounter = 0;
+                    doubleShiftTimer = setTimeout(function () { doubleShiftTimer = null; }, DOUBLE_PRESS_TIMEOUT);
+                } else {
+                    shiftCounter++;
+                }
+            } else if (e.keyCode != SHIFT_KEY && doubleShiftTimer) {
                 clearTimeout(doubleShiftTimer);
                 doubleShiftTimer = null;
                 shiftCounter = 0;
-                doubleShiftHappens();
             }
-        }
-    }
+        });
 
-    function doubleShiftHappens() {
-        if (UIEl) return;
-        chrome.runtime.sendMessage(
-            {"action": "getTabList"},
-            function (tabs) {
-                tabList = tabs;
-                showUI();
+        doc.body.addEventListener('keyup', function (e) {
+            if (e.keyCode == SHIFT_KEY && lastShiftState) {
+                lastShiftState = false;
+                if (doubleShiftTimer && shiftCounter > 0) {
+                    clearTimeout(doubleShiftTimer);
+                    doubleShiftTimer = null;
+                    shiftCounter = 0;
+                    handler();
+                }
+            } else if (e.keyCode != SHIFT_KEY && doubleShiftTimer) {
+                clearTimeout(doubleShiftTimer);
+                doubleShiftTimer = null;
+                shiftCounter = 0;
             }
-        );
-    }
+        });
+    })(function () {
+        if (UIEl) return;
+        try {
+            chrome.runtime.sendMessage(
+                {"action": "getTabList"},
+                function (tabs) {
+                    tabList = tabs;
+                    mainUIEl(showUI());
+                }
+            );
+        } catch (e) {
+            reloadMessageEl(showUI());
+        }
+    });
 
     doc.body.addEventListener('mousedown', function (e) {
         if (!UIEl) return;
@@ -69,26 +80,47 @@
             if (found = el.classList.contains(CSS_PREFIX + "container")) break;
             el = el.parentNode;
         }
-        if (!found) closeUI();
+        if (!found) hideUI();
     });
 
-    var showUI = function () {
+    var msgTexts = {
+        "reloadMessageText": chrome.i18n.getMessage("reloadMessageText"),
+        "reloadButtonText": chrome.i18n.getMessage("reloadButtonText"),
+        "cancelButtonText": chrome.i18n.getMessage("cancelButtonText")
+    };
+
+    function reloadMessageEl(win) {
+        var msg = win.appendChild(doc.createElement("div"));
+        msg.className = CSS_PREFIX + "message";
+        msg.appendChild(doc.createElement("div")).innerText = msgTexts["reloadMessageText"];
+        var btn = msg.appendChild(doc.createElement("button"));
+        btn.innerText = msgTexts["reloadButtonText"];
+        btn.addEventListener("click", function () { location.reload(); });
+        btn.focus();
+        var btn2 = msg.appendChild(doc.createElement("button"));
+        btn2.innerText = msgTexts["cancelButtonText"];
+        btn2.addEventListener("click", hideUI);
+    }
+
+    function showUI() {
+        lastActiveElement = document.activeElement;
         UIEl = doc.body.appendChild(doc.createElement("div"));
         UIEl.className = CSS_PREFIX + "center-wrapper";
-
         var winEl = UIEl.appendChild(doc.createElement("div"));
         winEl.className = CSS_PREFIX + "container";
+        return winEl;
+    }
 
-
+    var mainUIEl = function (winEl) {
         var headEl = winEl.appendChild(doc.createElement("div"));
         headEl.className = CSS_PREFIX + "head";
-        headEl.addEventListener("mousedown", function (e) { e.preventDefault(); });
 
         var inputEl = headEl.appendChild(doc.createElement("input"));
         inputEl.type = "text";
         inputEl.className = CSS_PREFIX + "input";
         inputEl.autocomplete = false;
         inputEl.focus();
+        winEl.addEventListener("mouseup", function (e) { if (e.target !== inputEl) inputEl.focus(); });
 
         var listEl = winEl.appendChild(doc.createElement("div"));
         listEl.className = CSS_PREFIX + "list";
@@ -115,12 +147,14 @@
                     updateSelection(listEl, selectedIndex);
                 }
             } else if (e.keyCode == ENTER_KEY) {
-                if (nItems > 0) {
+                if (nItems > 0 && !e.ctrlKey) {
                     var tabId = parseInt(listEl.children[selectedIndex < 0 ? 0 : selectedIndex].dataset.id, 10);
-                    chrome.runtime.sendMessage({"action": "setTab", id: tabId}, closeUI);
+                    chrome.runtime.sendMessage({"action": "setTab", id: tabId}, hideUI);
+                } else {
+                    chrome.runtime.sendMessage({"action": "newTab", text: e.target.value}, hideUI);
                 }
             } else if (e.keyCode == ESCAPE_KEY) {
-                closeUI();
+                hideUI();
             } else {
                 return;
             }
@@ -147,8 +181,8 @@
         listEl.innerHTML = "";
         var first = true;
         tabList.forEach(function (tab) {
-            var founds = transSearch(tab.title, query);
-            if (founds === false) return;
+            var titleFounds = transSearch(tab.title, query);
+            if (titleFounds === false) return;
 
             var li = listEl.appendChild(doc.createElement("div"));
             li.className = CSS_PREFIX + "item";
@@ -181,20 +215,22 @@
 
             var title = infoBox.appendChild(doc.createElement("div"));
             title.className = CSS_PREFIX + "title";
-            title.appendChild(textWithSelections(tab.title, founds, qLen));
+            title.appendChild(textWithSelections(tab.title, titleFounds, qLen));
 
             var url = infoBox.appendChild(doc.createElement("div"));
             url.className = CSS_PREFIX + "url";
-            url.innerText = tab.url;
+            url.innerText = decodeURIComponent(tab.url);
 
             first = false;
         });
     };
 
-    var closeUI = function () {
+    var hideUI = function () {
         if (!UIEl) return;
         UIEl.parentNode.removeChild(UIEl);
+        if (lastActiveElement && "focus" in lastActiveElement) lastActiveElement.focus();
         UIEl = null;
+        lastActiveElement = null;
     };
 
     /**
@@ -260,11 +296,13 @@
     var textWithSelections = function (text, sels, qLen) {
         var fr = doc.createDocumentFragment(),
             pos = 0;
-        sels.forEach(function (sel) {
-            fr.appendChild(doc.createTextNode(text.substr(pos, sel - pos)));
-            fr.appendChild(doc.createElement("span")).appendChild(doc.createTextNode(text.substr(sel, qLen)));
-            pos = sel + qLen;
-        });
+        if (sels !== false) {
+            sels.forEach(function (sel) {
+                fr.appendChild(doc.createTextNode(text.substr(pos, sel - pos)));
+                fr.appendChild(doc.createElement("span")).appendChild(doc.createTextNode(text.substr(sel, qLen)));
+                pos = sel + qLen;
+            });
+        }
         fr.appendChild(doc.createTextNode(text.substr(pos)));
         return fr;
     };
@@ -274,7 +312,7 @@
         while (el) {
             if (el.classList.contains(CSS_PREFIX + "item")) {
                 tabId = parseInt(el.dataset.id, 10);
-                chrome.runtime.sendMessage({"action": "setTab", id: tabId}, closeUI);
+                chrome.runtime.sendMessage({"action": "setTab", id: tabId}, hideUI);
                 break;
             }
             if (el.classList.contains(CSS_PREFIX + "close-btn")) {

@@ -33,10 +33,11 @@
 }
 
 .@{pfx}head {
-    flex-shrink: 0;
-    display:     flex;
-    padding:     8px;
-    background:  #eee;
+    flex-shrink:   0;
+    display:       flex;
+    padding:       8px;
+    background:    #eee;
+    border-bottom: 1px solid #ccc;
 }
 
 .@{pfx}input {
@@ -126,5 +127,15 @@
 
     .@{pfx}url {
         color: #bcd;
+    }
+}
+
+.@{pfx}message {
+    padding:    1em;
+    text-align: center;
+
+    button {
+        margin:    1em 0.5em;
+        min-width: 6em;
     }
 }
