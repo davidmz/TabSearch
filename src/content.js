@@ -5,7 +5,6 @@
         ESCAPE_KEY = 27,
         DOWN_KEY = 40,
         UP_KEY = 38,
-        CSS_PREFIX = "__tab-search-ext--",
         enKeys = "`~@#$^&|qwertyuiop[]asdfghjkl;'zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?",
         ruKeys = "ёЁ\"№;:?/йцукенгшщзхъфывапролджэячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,",
         doc = document;
@@ -74,13 +73,13 @@
 
     doc.body.addEventListener('mousedown', function (e) {
         if (!UIEl) return;
-        var el = e.target, found = false;
-        while (el) {
-            if (!("classList" in el)) break;
-            if (found = el.classList.contains(CSS_PREFIX + "container")) break;
-            el = el.parentNode;
+        for (var i = 0; i < e.path.length; i++) {
+            var el = e.path[i];
+            if ("classList" in el && el.classList.contains("container")) {
+                return;
+            }
         }
-        if (!found) hideUI();
+        hideUI();
     });
 
     var msgTexts = {
@@ -91,7 +90,7 @@
 
     function reloadMessageEl(win) {
         var msg = win.appendChild(doc.createElement("div"));
-        msg.className = CSS_PREFIX + "message";
+        msg.className = "message";
         msg.appendChild(doc.createElement("div")).innerText = msgTexts["reloadMessageText"];
         var btn = msg.appendChild(doc.createElement("button"));
         btn.innerText = msgTexts["reloadButtonText"];
@@ -104,26 +103,31 @@
 
     function showUI() {
         lastActiveElement = document.activeElement;
+        // наш представитель в документе
         UIEl = doc.body.appendChild(doc.createElement("div"));
-        UIEl.className = CSS_PREFIX + "center-wrapper";
-        var winEl = UIEl.appendChild(doc.createElement("div"));
-        winEl.className = CSS_PREFIX + "container";
+        UIEl.className = "__tab-search-ext-UI";
+
+        var root = UIEl.createShadowRoot();
+        var wrapper = root.appendChild(doc.createElement("div"));
+        wrapper.className = "center-wrapper";
+        var winEl = wrapper.appendChild(doc.createElement("div"));
+        winEl.className = "container";
         return winEl;
     }
 
     var mainUIEl = function (winEl) {
         var headEl = winEl.appendChild(doc.createElement("div"));
-        headEl.className = CSS_PREFIX + "head";
+        headEl.className = "head";
 
         var inputEl = headEl.appendChild(doc.createElement("input"));
         inputEl.type = "text";
-        inputEl.className = CSS_PREFIX + "input";
+        inputEl.className = "input";
         inputEl.autocomplete = false;
         inputEl.focus();
         winEl.addEventListener("mouseup", function (e) { if (e.target !== inputEl) inputEl.focus(); });
 
         var listEl = winEl.appendChild(doc.createElement("div"));
-        listEl.className = CSS_PREFIX + "list";
+        listEl.className = "list";
         listEl.addEventListener("click", clickHandler);
 
         inputEl.addEventListener("input", function () {
@@ -164,7 +168,7 @@
     };
 
     var updateSelection = function (listEl, selectedIndex) {
-        var selClass = CSS_PREFIX + "current-item";
+        var selClass = "current-item";
         var current = listEl.querySelector(":scope > ." + selClass);
         if (current) current.classList.remove(selClass);
         if (selectedIndex >= 0) {
@@ -185,20 +189,20 @@
             if (titleFounds === false) return;
 
             var li = listEl.appendChild(doc.createElement("div"));
-            li.className = CSS_PREFIX + "item";
+            li.className = "item";
             li.dataset.id = tab.id;
 
             if (prevWin != tab.windowId) {
                 prevWin = tab.windowId;
-                if (!first) li.classList.add(CSS_PREFIX + "first-in-win");
+                if (!first) li.classList.add("first-in-win");
             }
 
             var closeBtn = li.appendChild(doc.createElement("div"));
-            closeBtn.className = CSS_PREFIX + "close-btn";
+            closeBtn.className = "close-btn";
             closeBtn.title = chrome.i18n.getMessage("closeTab");
 
             var icon = li.appendChild(doc.createElement("img"));
-            icon.className = CSS_PREFIX + "icon";
+            icon.className = "icon";
             var imgUrl = tab.favIconUrl;
             if (!imgUrl) {
                 imgUrl = chrome.extension.getURL("img/page-white.png");
@@ -211,14 +215,14 @@
             icon.src = imgUrl;
 
             var infoBox = li.appendChild(doc.createElement("div"));
-            infoBox.className = CSS_PREFIX + "info-box";
+            infoBox.className = "info-box";
 
             var title = infoBox.appendChild(doc.createElement("div"));
-            title.className = CSS_PREFIX + "title";
+            title.className = "title";
             title.appendChild(textWithSelections(tab.title, titleFounds, qLen));
 
             var url = infoBox.appendChild(doc.createElement("div"));
-            url.className = CSS_PREFIX + "url";
+            url.className = "url";
             url.innerText = decodeURIComponent(tab.url);
 
             first = false;
@@ -310,12 +314,12 @@
     var clickHandler = function (e) {
         var el = e.target, tabId;
         while (el) {
-            if (el.classList.contains(CSS_PREFIX + "item")) {
+            if (el.classList.contains("item")) {
                 tabId = parseInt(el.dataset.id, 10);
                 chrome.runtime.sendMessage({"action": "setTab", id: tabId}, hideUI);
                 break;
             }
-            if (el.classList.contains(CSS_PREFIX + "close-btn")) {
+            if (el.classList.contains("close-btn")) {
                 var it = el.parentNode;
                 tabId = parseInt(it.dataset.id, 10);
                 chrome.runtime.sendMessage({"action": "closeTab", id: tabId}, (function (it, tabId) {
