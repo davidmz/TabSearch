@@ -183,19 +183,21 @@
 
         var prevWin = null;
         listEl.innerHTML = "";
+        var winBlock = null;
         var first = true;
         tabList.forEach(function (tab) {
             var titleFounds = transSearch(tab.title, query);
             if (titleFounds === false) return;
 
-            var li = listEl.appendChild(doc.createElement("div"));
-            li.className = "item";
-            li.dataset.id = tab.id;
-
             if (prevWin != tab.windowId) {
                 prevWin = tab.windowId;
-                if (!first) li.classList.add("first-in-win");
+                winBlock = listEl.appendChild(doc.createElement("div"));
+                winBlock.className = "win";
             }
+
+            var li = winBlock.appendChild(doc.createElement("div"));
+            li.className = "item";
+            li.dataset.id = tab.id;
 
             var closeBtn = li.appendChild(doc.createElement("div"));
             closeBtn.className = "close-btn";

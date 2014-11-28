@@ -61,8 +61,11 @@
         cursor:          pointer;
     }
 
-    &.first-in-win {
-        border-top: 1px solid #666;
+    .win {
+        border-top: 3px solid #d0d0d0;
+        &:first-of-type {
+            border-top: none;
+        }
     }
 
     .close-btn {

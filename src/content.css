@@ -55,8 +55,11 @@
   background: linear-gradient(to bottom, #ffffff, #eeeeee);
   cursor: pointer;
 }
-.__tab-search-ext-UI::shadow.first-in-win {
-  border-top: 1px solid #666;
+.__tab-search-ext-UI::shadow .win {
+  border-top: 3px solid #d0d0d0;
+}
+.__tab-search-ext-UI::shadow .win:first-of-type {
+  border-top: none;
 }
 .__tab-search-ext-UI::shadow .close-btn {
   background: transparent url(chrome-extension://__MSG_@@extension_id__/img/cross-small.png) no-repeat center center;
