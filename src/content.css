@@ -88,7 +88,7 @@
   flex: 0 1 auto;
   white-space: nowrap;
 }
-.__tab-search-ext-UI::shadow .info-box span {
+.__tab-search-ext-UI::shadow .info-box .hl {
   font-weight: bold;
   background-color: #ffc;
   color: black;

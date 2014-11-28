@@ -184,10 +184,10 @@
         var prevWin = null;
         listEl.innerHTML = "";
         var winBlock = null;
-        var first = true;
         tabList.forEach(function (tab) {
             var titleFounds = transSearch(tab.title, query);
-            if (titleFounds === false) return;
+            var domainFounds = transSearch(tab.domain.text, query);
+            if (titleFounds === false && domainFounds === false) return;
 
             if (prevWin != tab.windowId) {
                 prevWin = tab.windowId;
@@ -208,6 +208,8 @@
             var imgUrl = tab.favIconUrl;
             if (!imgUrl) {
                 imgUrl = chrome.extension.getURL("img/page-white.png");
+            } else if (/^data:image\//.test(imgUrl)) {
+                // ok
             } else if (!/^https?:/.test(imgUrl)) {
                 imgUrl = chrome.extension.getURL("img/chrome-icon.png");
             } else if (location.protocol == "https:" && /^http:/.test(imgUrl)) {
@@ -225,9 +227,9 @@
 
             var url = infoBox.appendChild(doc.createElement("div"));
             url.className = "url";
-            url.innerText = decodeURIComponent(tab.url);
-
-            first = false;
+            url.appendChild(doc.createTextNode(tab.urlText.substr(0, tab.domain.off)));
+            url.appendChild(textWithSelections(tab.domain.text, domainFounds, qLen));
+            url.appendChild(doc.createTextNode(tab.urlText.substr(tab.domain.off + tab.domain.text.length)));
         });
     };
 
@@ -305,7 +307,9 @@
         if (sels !== false) {
             sels.forEach(function (sel) {
                 fr.appendChild(doc.createTextNode(text.substr(pos, sel - pos)));
-                fr.appendChild(doc.createElement("span")).appendChild(doc.createTextNode(text.substr(sel, qLen)));
+                var sp = fr.appendChild(doc.createElement("span"));
+                sp.className = "hl";
+                sp.innerText = text.substr(sel, qLen);
                 pos = sel + qLen;
             });
         }

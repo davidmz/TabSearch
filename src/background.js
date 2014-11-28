@@ -3,11 +3,26 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
         var list = [];
         chrome.tabs.query({}, function (tabs) {
             tabs.forEach(function (tab) {
+                var urlText = decodeURIComponent(tab.url);
+                var off = 0;
+                var domain = "";
+                var m = /^(.*?:\/\/(?:www\.)?)([^\/]+)(.*)/.exec(urlText);
+                if (m) {
+                    off = m[1].length;
+                    domain = punycode.toUnicode(m[2]);
+                    urlText = m[1] + domain + m[3];
+                    m = /^(.*?)\.[^.]+$/.exec(domain);
+                    if (m) {
+                        domain = m[1];
+                    }
+                }
                 list.push({
                     id: tab.id,
                     windowId: tab.windowId,
                     title: tab.title,
                     url: tab.url,
+                    urlText: urlText,
+                    domain: {off: off, text: domain},
                     favIconUrl: tab.favIconUrl
                 });
             });
@@ -22,7 +37,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
     } else if (request.action == "closeTab") {
         chrome.tabs.remove(request.id, callback);
     } else if (request.action == "newTab") {
-        chrome.tabs.create({url: "https://www.google.com/search?btnI&q=" + encodeURIComponent(request.text), openerTabId: sender.tab.id}, callback);
+        chrome.tabs.create({
+            url: "https://www.google.com/search?btnI&q=" + encodeURIComponent(request.text),
+            openerTabId: sender.tab.id
+        }, callback);
     }
     return true;
 });
