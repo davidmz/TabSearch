@@ -61,6 +61,9 @@
 .__tab-search-ext-UI::shadow .win:first-of-type {
   border-top: none;
 }
+.__tab-search-ext-UI::shadow .win:empty {
+  display: none;
+}
 .__tab-search-ext-UI::shadow .close-btn {
   background: transparent url(chrome-extension://__MSG_@@extension_id__/img/cross-small.png) no-repeat center center;
   position: absolute;
