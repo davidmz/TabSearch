@@ -44,3 +44,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
     }
     return true;
 });
+
+chrome.commands.onCommand.addListener(function (command) {
+    if (command == "showUI") {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            if (tabs.length > 0) {
+                chrome.tabs.sendMessage(tabs[0].id, "showUI");
+            }
+        });
+    }
+});

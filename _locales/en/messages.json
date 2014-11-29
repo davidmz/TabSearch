@@ -16,5 +16,8 @@
     },
     "cancelButtonText": {
         "message": "Cancel"
+    },
+    "hotKeyDesc": {
+        "message": "Show list of tabs"
     }
 }

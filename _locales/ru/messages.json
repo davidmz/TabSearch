@@ -16,5 +16,8 @@
     },
     "cancelButtonText": {
         "message": "Отмена"
+    },
+    "hotKeyDesc": {
+        "message": "Показать список вкладок"
     }
 }

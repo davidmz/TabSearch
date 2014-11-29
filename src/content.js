@@ -25,7 +25,7 @@
             shiftCounter = 0,
             doubleShiftTimer = null;
 
-        doc.body.addEventListener('keydown', function (e) {
+        window.addEventListener('keydown', function (e) {
             if (e.keyCode == SHIFT_KEY && !lastShiftState) {
                 lastShiftState = true;
                 if (!doubleShiftTimer) {
@@ -41,7 +41,7 @@
             }
         });
 
-        doc.body.addEventListener('keyup', function (e) {
+        window.addEventListener('keyup', function (e) {
             if (e.keyCode == SHIFT_KEY && lastShiftState) {
                 lastShiftState = false;
                 if (doubleShiftTimer && shiftCounter > 0) {
@@ -68,6 +68,22 @@
             );
         } catch (e) {
             reloadMessageEl(showUI());
+        }
+    });
+
+    chrome.runtime.onMessage.addListener(function (msg) {
+        if (msg == "showUI" && !UIEl) {
+            try {
+                chrome.runtime.sendMessage(
+                    {"action": "getTabList"},
+                    function (tabs) {
+                        tabList = tabs;
+                        mainUIEl(showUI());
+                    }
+                );
+            } catch (e) {
+                reloadMessageEl(showUI());
+            }
         }
     });
 

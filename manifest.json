@@ -22,9 +22,24 @@
             "css": ["src/content.css"]
         }
     ],
+
     "background": {
-        "scripts": ["src/punycode.min.js", "src/background.js"]
+        "scripts": [
+            "src/punycode.min.js",
+            "src/background.js"
+        ],
+        "persistent": false
     },
+
+    "commands": {
+        "showUI": {
+            "suggested_key": {
+                "default": "Alt+T"
+            },
+            "description": "__MSG_hotKeyDesc__"
+        }
+    },
+
     "web_accessible_resources": [
         "img/chrome-icon.png",
         "img/cross-small.png",
