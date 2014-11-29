@@ -86,6 +86,7 @@
   height: 18px !important;
   min-width: 18px !important;
   margin-right: 4px;
+  margin-top: 1px;
 }
 .__tab-search-ext-UI::shadow .info-box {
   flex: 0 1 auto;
