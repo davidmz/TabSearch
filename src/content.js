@@ -151,7 +151,7 @@
         });
         inputEl.addEventListener("keydown", function (e) {
             e.stopPropagation();
-            var nItems = listEl.children.length;
+            var nItems = listEl.querySelectorAll(".item").length;
             if (e.keyCode == DOWN_KEY) {
                 if (nItems > 0) {
                     selectedIndex = (selectedIndex + 1) % nItems;
@@ -168,7 +168,7 @@
                 }
             } else if (e.keyCode == ENTER_KEY) {
                 if (nItems > 0 && !e.ctrlKey) {
-                    var tabId = parseInt(listEl.children[selectedIndex < 0 ? 0 : selectedIndex].dataset.id, 10);
+                    var tabId = parseInt(listEl.querySelectorAll(".item").item(selectedIndex < 0 ? 0 : selectedIndex).dataset.id, 10);
                     chrome.runtime.sendMessage({"action": "setTab", id: tabId}, hideUI);
                 } else {
                     chrome.runtime.sendMessage({"action": "newTab", text: e.target.value}, hideUI);
@@ -185,10 +185,10 @@
 
     var updateSelection = function (listEl, selectedIndex) {
         var selClass = "current-item";
-        var current = listEl.querySelector(":scope > ." + selClass);
+        var current = listEl.querySelector(".item." + selClass);
         if (current) current.classList.remove(selClass);
         if (selectedIndex >= 0) {
-            listEl.children[selectedIndex].classList.add(selClass);
+            listEl.querySelectorAll(".item").item(selectedIndex).classList.add(selClass);
         }
     };
 
