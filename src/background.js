@@ -3,7 +3,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
         var list = [];
         chrome.tabs.query({}, function (tabs) {
             tabs.forEach(function (tab) {
-                var urlText = decodeURIComponent(tab.url);
+                var urlText = tab.url;
+                try {
+                    urlText = decodeURIComponent(tab.url);
+                } catch (e) {
+                }
                 var off = 0;
                 var domain = "";
                 var m = /^(.*?:\/\/(?:www\.)?)([^\/]+)(.*)/.exec(urlText);

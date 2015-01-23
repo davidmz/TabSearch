@@ -3,7 +3,7 @@
 
     "name": "__MSG_extName__",
     "description": "Search for tab",
-    "version": "1.7",
+    "version": "1.8",
 
     "default_locale": "en",
 
@@ -27,7 +27,8 @@
         "scripts": [
             "src/punycode.min.js",
             "src/background.js"
-        ]
+        ],
+        "persistent": false
     },
 
     "commands": {
